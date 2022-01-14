@@ -4,7 +4,7 @@ const isEmpty = (inputObject) => {
   return Object.keys(inputObject).length === 0;
 };
 
-const filterRequestBody = async (allowedFields, body) => {
+const validateRequestBodyFields = async (allowedFields, body) => {
     if (isEmpty(body)) throw new BadRequestError("Fields required");
 
     const filteredBody = {};
@@ -16,4 +16,4 @@ const filterRequestBody = async (allowedFields, body) => {
     return filteredBody;
 }
 
-module.exports = { isEmpty, filterRequestBody };
+module.exports = { isEmpty, validateRequestBodyFields };

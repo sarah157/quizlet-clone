@@ -8,7 +8,7 @@ const {
   ForbiddenError,
 } = require("../utils/errors");
 const { USER_ROLE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants");
-const { filterRequestBody } = require("../utils/helpers");
+const { validateRequestBodyFields } = require("../utils/helpers");
 
 const deckSchema = new Schema(
   {
@@ -88,7 +88,7 @@ deckSchema.methods.filterBodyByUserRole = async function (
     throw new ForbiddenError();
   }
 
-  const filtered = await filterRequestBody(ALLOWED_DECK_FIELDS, requestBody);
+  const filtered = await validateRequestBodyFields(ALLOWED_DECK_FIELDS, requestBody);
 
   if (filtered.hasOwnProperty("password")) {
     await this.hashPassword(filtered.password);

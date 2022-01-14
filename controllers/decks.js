@@ -7,7 +7,7 @@ const { ACTION_TYPE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants"
 const Deck = require("../models/Deck");
 const Card = require("../models/Card");
 const User = require("../models/User");
-const { isEmpty, filterRequestBody } = require("../utils/helpers");
+const { isEmpty, validateRequestBodyFields } = require("../utils/helpers");
 
 
 // Get decks by username or userId. If both are given, userId is used
@@ -35,7 +35,7 @@ module.exports.getDecksByUser = catchAsync(async (req, res) => {
 });
 
 module.exports.createDeck = catchAsync(async (req, res) => {
-  const validBody = await filterRequestBody(ALLOWED_DECK_FIELDS, req.body);
+  const validBody = await validateRequestBodyFields(ALLOWED_DECK_FIELDS, req.body);
   const deck = await new Deck({
     ...validBody,
     owner: req.user.userId,
