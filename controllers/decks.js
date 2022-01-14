@@ -7,7 +7,7 @@ const { ACTION_TYPE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants"
 const Deck = require("../models/Deck");
 const Card = require("../models/Card");
 const User = require("../models/User");
-const { isEmpty, validateRequestBodyFields } = require("../utils/helpers");
+const { isEmpty, validateReqBodyFields } = require("../utils/helpers");
 
 
 // Get decks by username or userId. If both are given, userId is used
@@ -35,7 +35,7 @@ module.exports.getDecksByUser = catchAsync(async (req, res) => {
 });
 
 module.exports.createDeck = catchAsync(async (req, res) => {
-  const validBody = await validateRequestBodyFields(ALLOWED_DECK_FIELDS, req.body);
+  const validBody = await validateReqBodyFields(ALLOWED_DECK_FIELDS, req.body);
   const deck = await new Deck({
     ...validBody,
     owner: req.user.userId,
@@ -56,7 +56,7 @@ module.exports.updateDeck = catchAsync(async (req, res) => {
   if (!deck) throw new NotFoundError("Deck not found")
 
   const userRole = await deck.authorizeUser(ACTION_TYPE.EDIT, req.user.userId, req.body?.password)
-  const validBody = await deck.filterBodyByUserRole(req.body, userRole)
+  const validBody = await deck.validateBodyByUserRole(req.body, userRole)
 
   const updatedDeck = await Deck.findByIdAndUpdate(
     deck._id,

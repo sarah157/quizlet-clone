@@ -6,6 +6,8 @@ const {NotFoundError, ForbiddenError, BadRequestError } = require("../utils/erro
 const Folder = require("../models/Folder");
 const Deck = require("../models/Deck");
 const User = require("../models/User");
+const { ALLOWED_FOLDER_FIELDS } = require("../constants");
+const { validateReqBodyFields } = require("../utils/helpers");
 
 // Get Folders by userId or username. If both given, userId is used.
 // If none are given, gets current user's folders
@@ -27,17 +29,17 @@ module.exports.getFoldersByUser = catchAsync(async (req, res) => {
     ? await User.findById(req.query.userId)
     : await User.findOne({ username: req.query.username });
 
-  if (!user) {
-    throw new NotFoundError("User not found");
-  }
+  if (!user) throw new NotFoundError("User not found");
+  
   folders = await Folder.find({ owner: user._id });
 
   res.status(StatusCodes.OK).json({ folders });
 });
 
 module.exports.createFolder = catchAsync(async (req, res) => {
+  const validBody = await validateReqBodyFields(ALLOWED_FOLDER_FIELDS, req.body)
   const folder = await new Folder({
-    ...req.body,
+    ...validBody,
     owner: req.user.userId,
   }).save()
   
@@ -56,11 +58,11 @@ module.exports.showFolder = catchAsync(async (req, res) => {
   res.status(StatusCodes.OK).json({ folder });
 });
 
-// Update title 
 module.exports.updateFolder = catchAsync(async (req, res) => {
+  const validBody = await validateReqBodyFields(ALLOWED_FOLDER_FIELDS, req.body)
   const folder = await Folder.findByIdAndUpdate(
     req.params.folderId,
-    { $set: req.body },
+    { $set: validBody },
     { new: true }
   );
   if (!folder) {

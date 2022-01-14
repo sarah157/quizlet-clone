@@ -8,7 +8,7 @@ const {
   ForbiddenError,
 } = require("../utils/errors");
 const { USER_ROLE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants");
-const { validateRequestBodyFields } = require("../utils/helpers");
+const { validateReqBodyFields } = require("../utils/helpers");
 
 const deckSchema = new Schema(
   {
@@ -78,32 +78,29 @@ deckSchema.methods.comparePassword = async function (inputPass) {
   return bcrypt.compare(inputPass, this.password);
 };
 
-deckSchema.methods.filterBodyByUserRole = async function (
-  requestBody,
-  userRole
-) {
-  const { editableBy, visibleTo, password } = requestBody;
+deckSchema.methods.validateBodyByUserRole = async function (requestBody, userRole) {
 
-  if (userRole !== USER_ROLE.ADMIN && (editableBy || visibleTo || password)) {
-    throw new ForbiddenError();
-  }
+  const allowedFields =
+  userRole === USER_ROLE.ADMIN
+    ? ALLOWED_DECK_FIELDS
+    : ALLOWED_DECK_FIELDS.splice(3);
 
-  const filtered = await validateRequestBodyFields(ALLOWED_DECK_FIELDS, requestBody);
+  const validBody = await validateReqBodyFields(allowedFields, requestBody);
 
-  if (filtered.hasOwnProperty("password")) {
-    await this.hashPassword(filtered.password);
+  if (validBody.hasOwnProperty("password")) {
+    await this.hashPassword(validBody.password);
   }
   if (
     !this.password &&
-    (filtered.editableBy === ACCESS_TYPE.PASSWORD_PROTECTED ||
-      filtered.visibleTo === ACCESS_TYPE.PASSWORD_PROTECTED)
+    (validBody.editableBy === ACCESS_TYPE.PASSWORD_PROTECTED ||
+      validBody.visibleTo === ACCESS_TYPE.PASSWORD_PROTECTED)
   ) {
     throw new BadRequestError(
       "Deck has no password. Please create a password."
     );
   }
-  delete filtered.password;
-  return filtered;
+  delete validBody.password;
+  return validBody;
 };
 
 deckSchema.methods.authorizeUser = async function (
