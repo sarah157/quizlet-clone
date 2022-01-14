@@ -2,10 +2,11 @@ const { StatusCodes } = require("http-status-codes");
 
 const catchAsync = require("../utils/catchAsync");
 const { NotFoundError, BadRequestError } = require("../utils/errors");
-const {ACTION_TYPE} = require("../constants")
+const {ACTION_TYPE, ALLOWED_CARD_FIELDS} = require("../constants")
 
 const Card = require("../models/Card");
 const Deck = require("../models/Deck");
+const { filterRequestBody } = require("../utils/helpers");
 
 module.exports.getCards = catchAsync(async (req, res) => {
   const { deckId } = req.query
@@ -22,10 +23,12 @@ module.exports.getCards = catchAsync(async (req, res) => {
 
 module.exports.createCard = catchAsync(async (req, res) => {
   const { index, ...data } = req.body;
+
   const deck = await Deck.findById(data.deckId);
   if (!deck) throw new NotFoundError("Deck not found");
 
-  const card = await new Card({ ...data }).save();
+  const validBody = await filterRequestBody(ALLOWED_CARD_FIELDS, data)
+  const card = await new Card(validBody).save()
 
   const maxIndex = deck.cards.length - 1;
   if (!deck.cards.length || index === undefined || index >= maxIndex) {
@@ -40,22 +43,18 @@ module.exports.updateCard = catchAsync(async (req, res) => {
   const card = await Card.findById(req.params.cardId);
   if (!card) throw new NotFoundError("Card not found");
 
+  
   const deck = await Deck.findById(card.deckId)
   deck.authorizeUser(ACTION_TYPE.EDIT, req.user.userId, req.body?.password)
-
-  const filteredBody = {}
-  if (req.body.content) filteredBody.content = req.body.content
-  if (req.body.starred) filteredBody.starred = req.body.starred
+  
+  const validBody = await filterRequestBody(ALLOWED_CARD_FIELDS, req.body)
 
   const updatedCard = await Card.findByIdAndUpdate(req.params.cardId,
-    { $set: { ...filteredBody } },
+    { $set: validBody },
     { new: true });
-  
 
   res.status(StatusCodes.OK).json({ card: updatedCard });
 });
-
-
 
 module.exports.showCard = catchAsync(async (req, res) => {
   const card = await Card.findById(req.params.cardId);

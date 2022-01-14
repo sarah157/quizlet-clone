@@ -12,24 +12,15 @@ const cardSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    rank: Number,
-    archived: { type: Boolean, default: false },
-    reviewDates: [
-      {
-        date: Date,
-        difficulty: { type: String, enum: ["easy", "medium", "hard"] },
-      },
-    ],
+    // reviewDates: [
+    //   {
+    //     date: Date,
+    //     difficulty: { type: String, enum: ["easy", "medium", "hard"] },
+    //   },
+    // ],
   },
   { timestamps: true }
 );
 
-cardSchema.methods.nextReviewDate = function (remembered, reviewDates) {
-  const lastInterval = Date.now() - reviewDates[reviewDates.length - 1];
-
-  if (remembered) {
-    return Date.now() + lastInterval / 2;
-  } else return Date.now() + lastInterval * 2;
-};
 
 module.exports = model("Card", cardSchema);

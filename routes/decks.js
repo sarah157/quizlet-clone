@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const decks = require('../controllers/decks')
-const {authenticate, optionalAuth} = require('../middleware/auth')
+const decks = require('../controllers/decks');
+const { authenticate, optionalAuth } = require('../middleware/auth');
 
 router.route('/')
     .get(optionalAuth, decks.getDecksByUser)
@@ -16,5 +16,6 @@ router.route('/:deckId/cardOrder')
     .put(authenticate, decks.reorderCards)
 
 module.exports = router;
+
 
 

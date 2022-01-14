@@ -7,7 +7,8 @@ const {
   AuthError,
   ForbiddenError,
 } = require("../utils/errors");
-const { USER_ROLE, ACCESS_TYPE, EDITABLE_DECK_PROPS } = require("../constants");
+const { USER_ROLE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants");
+const { filterRequestBody } = require("../utils/helpers");
 
 const deckSchema = new Schema(
   {
@@ -22,7 +23,10 @@ const deckSchema = new Schema(
       min: 0,
       max: 1,
       default: 0,
-      required: [true, "Value required for editableBy (0 = private, 1 = password protected"],
+      required: [
+        true,
+        "Value required for editableBy (0 = private, 1 = password protected",
+      ],
     },
     visibleTo: {
       type: Number,
@@ -60,28 +64,58 @@ deckSchema.post("findOneAndDelete", async function (doc) {
 });
 
 deckSchema.methods.hashPassword = async function (inputPass) {
-  inputPass = inputPass.toString();
+  if (typeof inputPass !== "string") {
+    throw new BadRequestError("Password must be a string");
+  }
   if (inputPass.length <= 3)
     throw new BadRequestError("Password length must be 4 or more characters");
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(inputPass, salt);
-  this.save();
+  await this.save();
 };
 
 deckSchema.methods.comparePassword = async function (inputPass) {
   return bcrypt.compare(inputPass, this.password);
 };
 
+deckSchema.methods.filterBodyByUserRole = async function (
+  requestBody,
+  userRole
+) {
+  const { editableBy, visibleTo, password } = requestBody;
+
+  if (userRole !== USER_ROLE.ADMIN && (editableBy || visibleTo || password)) {
+    throw new ForbiddenError();
+  }
+
+  const filtered = await filterRequestBody(ALLOWED_DECK_FIELDS, requestBody);
+
+  if (filtered.hasOwnProperty("password")) {
+    await this.hashPassword(filtered.password);
+  }
+  if (
+    !this.password &&
+    (filtered.editableBy === ACCESS_TYPE.PASSWORD_PROTECTED ||
+      filtered.visibleTo === ACCESS_TYPE.PASSWORD_PROTECTED)
+  ) {
+    throw new BadRequestError(
+      "Deck has no password. Please create a password."
+    );
+  }
+  delete filtered.password;
+  return filtered;
+};
+
 deckSchema.methods.authorizeUser = async function (
-  permissionType,
+  actionType,
   currentUserId,
   password
 ) {
   if (this.owner.toString() !== currentUserId) {
-    if (this[permissionType] === ACCESS_TYPE.PRIVATE) {
+    if (this[actionType] === ACCESS_TYPE.PRIVATE) {
       throw new ForbiddenError();
     }
-    if (this[permissionType] === ACCESS_TYPE.PASSWORD_PROTECTED) {
+    if (this[actionType] === ACCESS_TYPE.PASSWORD_PROTECTED) {
       if (!password) throw new BadRequestError("Password required");
       const isMatch = await this.comparePassword(password);
       if (!isMatch) throw new AuthError("Incorrect Password");
@@ -89,29 +123,6 @@ deckSchema.methods.authorizeUser = async function (
     return USER_ROLE.MEMBER;
   }
   return USER_ROLE.ADMIN;
-};
-
-deckSchema.methods.filterReqestBody = function (userRole, body) {
-  const { editableBy, visibleTo, password } = body;
-
-  if (userRole !== USER_ROLE.ADMIN && (editableBy || visibleTo || password)) {
-    throw new ForbiddenError();
-  }
-
-  const filteredBody = {};
-  for (let p of EDITABLE_DECK_PROPS) if (body[p]) filteredBody[p] = body[p];
-
-  if (
-    !this.password &&
-    (filteredBody.editableBy === ACCESS_TYPE.PASSWORD_PROTECTED ||
-      filteredBody.visibleTo === ACCESS_TYPE.PASSWORD_PROTECTED)
-  ) {
-    throw new BadRequestError(
-      "Deck has no password. Create a password for this deck"
-    );
-  }
-
-  return filteredBody;
 };
 
 module.exports = model("Deck", deckSchema);

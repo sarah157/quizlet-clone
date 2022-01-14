@@ -2,18 +2,19 @@ const { StatusCodes } = require("http-status-codes");
 
 const catchAsync = require("../utils/catchAsync");
 const { NotFoundError, BadRequestError } = require("../utils/errors");
-const { ACTION_TYPE } = require("../constants");
+const { ACTION_TYPE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants");
 
 const Deck = require("../models/Deck");
 const Card = require("../models/Card");
 const User = require("../models/User");
+const { isEmpty, filterRequestBody } = require("../utils/helpers");
 
 
 // Get decks by username or userId. If both are given, userId is used
-// Default: get current user's decks
+// If none are given, get current user's decks
 module.exports.getDecksByUser = catchAsync(async (req, res) => {
   let decks;
-  if (req.user && !Object.keys(req.query).length) {
+  if (req.user && isEmpty(req.query)) {
     decks = await Deck.find({ owner: req.user.userId });
     res.status(StatusCodes.OK).json({ decks });
     return;
@@ -28,14 +29,15 @@ module.exports.getDecksByUser = catchAsync(async (req, res) => {
 
   if (!user) throw new NotFoundError("User not found");
 
-  decks = await Deck.find({ owner: user._id, private: false });
+  decks = await Deck.find({ owner: user._id, visibleTo: ACCESS_TYPE.PUBLIC });
 
   res.status(StatusCodes.OK).json({ decks });
 });
 
 module.exports.createDeck = catchAsync(async (req, res) => {
+  const validBody = await filterRequestBody(ALLOWED_DECK_FIELDS, req.body);
   const deck = await new Deck({
-    ...req.body,
+    ...validBody,
     owner: req.user.userId,
   }).save();
 
@@ -50,17 +52,15 @@ module.exports.showDeck = catchAsync(async (req, res) => {
 });
 
 module.exports.updateDeck = catchAsync(async (req, res) => {
-  if (!Object.keys(req.body).length) throw new BadRequestError("Request body required")
   const deck = await Deck.findById(req.params.deckId);
   if (!deck) throw new NotFoundError("Deck not found")
 
   const userRole = await deck.authorizeUser(ACTION_TYPE.EDIT, req.user.userId, req.body?.password)
-  const { password, ...other } = deck.filterReqestBody(userRole, req.body)
-  if (password) await deck.hashPassword(password) 
-  
+  const validBody = await deck.filterBodyByUserRole(req.body, userRole)
+
   const updatedDeck = await Deck.findByIdAndUpdate(
     deck._id,
-    { $set: other },
+    { $set: validBody },
     { new: true, runValidators: true },
   );
 

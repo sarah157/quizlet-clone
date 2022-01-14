@@ -1,12 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 
 const catchAsync = require("../utils/catchAsync");
-const {
-  NotFoundError,
-  ForbiddenError,
-  BadRequestError,
-  CustomError,
-} = require("../utils/errors");
+const {NotFoundError, ForbiddenError, BadRequestError } = require("../utils/errors");
 
 const Folder = require("../models/Folder");
 const Deck = require("../models/Deck");
