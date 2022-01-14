@@ -15,7 +15,10 @@ module.exports.updateUser = catchAsync(async (req, res) => {
     ALLOWED_USER_FIELDS,
     req.body
   );
-  await User.findByIdAndUpdate(req.params.userId, validBody);
+  
+  await User.findByIdAndUpdate(req.params.userId,
+    { $set: validBody },
+    { runValidators: true });
 });
 
 module.exports.deleteUser = catchAsync(async (req, res) => {

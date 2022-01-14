@@ -63,7 +63,7 @@ module.exports.updateFolder = catchAsync(async (req, res) => {
   const folder = await Folder.findByIdAndUpdate(
     req.params.folderId,
     { $set: validBody },
-    { new: true }
+    { new: true, runValidators: true },
   );
   if (!folder) {
     throw new NotFoundError(`No folder with id ${req.params.folderId} found`);

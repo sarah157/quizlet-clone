@@ -51,7 +51,7 @@ module.exports.updateCard = catchAsync(async (req, res) => {
 
   const updatedCard = await Card.findByIdAndUpdate(req.params.cardId,
     { $set: validBody },
-    { new: true });
+    { new: true, runValidators: true });
 
   res.status(StatusCodes.OK).json({ card: updatedCard });
 });
@@ -70,9 +70,9 @@ module.exports.deleteCard = catchAsync(async (req, res) => {
   const deletedCard = await Card.findByIdAndDelete(req.params.cardId);
   if (!deletedCard) throw new NotFoundError("Card not found");
 
-  await Deck.findByIdAndUpdate(deletedCard.deckId, {
-    $pull: { cards: deletedCard._id },
-  });
+  await Deck.findByIdAndUpdate(deletedCard.deckId,
+    { $pull: { cards: deletedCard._id } }, 
+    { runValidators: true });
 
   res.status(StatusCodes.OK).json();
 });
