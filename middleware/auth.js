@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose")
 const { AuthError, ForbiddenError, BadRequestError, NotFoundError } = require("../utils/errors");
-const { isEmpty } = require("../utils/helpers");
 const Deck = require("../models/Deck")
+const Card = require("../models/Card")
 const {ACCESS_TYPE, ACTION_TYPE} = require("../constants")
 
 // verify token
@@ -50,6 +50,7 @@ const authorizeDeckAccess = async (req, res, next) => {
     if (!deck) throw new NotFoundError("Deck not found")
     
     if (deck.owner.toString() !== req.user?.userId) {
+      console.log(deck[actionType]);
       if (deck[actionType] === ACCESS_TYPE.PRIVATE) {
         throw new ForbiddenError();
       }
@@ -66,6 +67,24 @@ const authorizeDeckAccess = async (req, res, next) => {
     next(error)
 }
 };
+const authorizeCardAccess = async (req, res, next) => {
+  try {
+    let deckId;
+    if (req.baseUrl.replace(/\//g, "") === "cards") { //deckId in query or body
+      deckId = req.query?.deckId || req.body?.deckId
+      if (!deckId) throw new BadRequestError("deckId required")
+    }
+    else {
+      const card = await Card.findById(req.params.cardId)
+      if (!card) throw new NotFoundError("Card not found")
+      deckId = card.deckId
+    }
+    req.params.deckId = deckId
+    await authorizeDeckAccess(req, res, next);
+  } catch (error) {
+    next(error)
+}
+};
 
 // For public GET routes, allow access to private resources if current user is owner of resource
 // Skip any auth errors
@@ -75,4 +94,4 @@ const optionalAuth = function (req, res, next) {
   });
 };
 
-module.exports = { authenticate, optionalAuth, authorize, authorizeDeckAccess };
+module.exports = { authenticate, optionalAuth, authorize, authorizeDeckAccess, authorizeCardAccess };

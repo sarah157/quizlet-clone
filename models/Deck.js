@@ -3,12 +3,9 @@ const bcrypt = require("bcryptjs");
 const Card = require("./Card");
 const {
   NotFoundError,
-  BadRequestError,
-  AuthError,
-  ForbiddenError,
+  BadRequestError
 } = require("../utils/errors");
-const { USER_ROLE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants");
-const { validateReqBodyFields } = require("../utils/helpers");
+
 
 const deckSchema = new Schema(
   {
@@ -78,48 +75,5 @@ deckSchema.methods.comparePassword = async function (inputPass) {
   return bcrypt.compare(inputPass, this.password);
 };
 
-deckSchema.methods.validateBodyByUserRole = async function (requestBody, userRole) {
-
-  const allowedFields =
-  userRole === USER_ROLE.ADMIN
-    ? ALLOWED_DECK_FIELDS
-    : ALLOWED_DECK_FIELDS.splice(3);
-
-  const validBody = await validateReqBodyFields(allowedFields, requestBody);
-
-  if (validBody.hasOwnProperty("password")) {
-    await this.hashPassword(validBody.password);
-  }
-  if (
-    !this.password &&
-    (validBody.editableBy === ACCESS_TYPE.PASSWORD_PROTECTED ||
-      validBody.visibleTo === ACCESS_TYPE.PASSWORD_PROTECTED)
-  ) {
-    throw new BadRequestError(
-      "Deck has no password. Please create a password."
-    );
-  }
-  delete validBody.password; // already saved hashed password
-  return validBody;
-};
-
-deckSchema.methods.authorizeUser = async function (
-  actionType,
-  currentUserId,
-  password
-) {
-  if (this.owner.toString() !== currentUserId) {
-    if (this[actionType] === ACCESS_TYPE.PRIVATE) {
-      throw new ForbiddenError();
-    }
-    if (this[actionType] === ACCESS_TYPE.PASSWORD_PROTECTED) {
-      if (!password) throw new BadRequestError("Password required");
-      const isMatch = await this.comparePassword(password);
-      if (!isMatch) throw new AuthError("Incorrect Password");
-    }
-    return USER_ROLE.MEMBER;
-  }
-  return USER_ROLE.ADMIN;
-};
 
 module.exports = model("Deck", deckSchema);

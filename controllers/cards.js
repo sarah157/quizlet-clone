@@ -2,33 +2,23 @@ const { StatusCodes } = require("http-status-codes");
 
 const catchAsync = require("../utils/catchAsync");
 const { NotFoundError, BadRequestError } = require("../utils/errors");
-const {ACTION_TYPE, ALLOWED_CARD_FIELDS} = require("../constants")
 
 const Card = require("../models/Card");
 const Deck = require("../models/Deck");
 
 module.exports.getCards = catchAsync(async (req, res) => {
-  const { deckId } = req.query
-  if (!deckId) throw new BadRequestError("Query parameter deckId required")
-  
-  const deck = await Deck.findById(deckId)
-  if (!deck) throw new NotFoundError("Deck not found")
-  await deck.authorizeUser(ACTION_TYPE.READ, req.user?.userId, req.body?.password)
-  
+  const { deckId } = req.query;
   const cards = await Card.find({ deckId }).sort({ createdAt: -1 });
-  
   res.status(StatusCodes.OK).send({ cards });
 });
 
 module.exports.createCard = catchAsync(async (req, res) => {
   const { index, ...data } = req.body;
+  const card = await new Card(data).save()
 
   const deck = await Deck.findById(data.deckId);
-  if (!deck) throw new NotFoundError("Deck not found");
-
-  const card = await new Card(validBody).save()
-
   const maxIndex = deck.cards.length - 1;
+  
   if (!deck.cards.length || index === undefined || index >= maxIndex) {
     deck.cards.push(card._id);
   } else deck.cards.splice(index, 0, card._id);
@@ -38,15 +28,9 @@ module.exports.createCard = catchAsync(async (req, res) => {
 });
 
 module.exports.updateCard = catchAsync(async (req, res) => {
-  const card = await Card.findById(req.params.cardId);
-  if (!card) throw new NotFoundError("Card not found");
-
-  
-  const deck = await Deck.findById(card.deckId)
-  deck.authorizeUser(ACTION_TYPE.EDIT, req.user.userId, req.body?.password)
 
   const updatedCard = await Card.findByIdAndUpdate(req.params.cardId,
-    { $set: validBody },
+    { $set: req.body },
     { new: true, runValidators: true });
 
   res.status(StatusCodes.OK).json({ card: updatedCard });
@@ -55,9 +39,6 @@ module.exports.updateCard = catchAsync(async (req, res) => {
 module.exports.showCard = catchAsync(async (req, res) => {
   const card = await Card.findById(req.params.cardId);
   if (!card) throw new NotFoundError("Card not found");
-  
-  const deck = await Deck.findById(card.deckId)
-  deck.authorizeUser(ACTION_TYPE.READ, req.user?.userId, req.body?.password)
   
   res.status(StatusCodes.OK).json({ card });
 });

@@ -1,5 +1,3 @@
-const { BadRequestError } = require("../utils/errors");
-
 const isEmpty = (inputObject) => {
   return Object.keys(inputObject).length === 0;
 };
@@ -10,7 +8,7 @@ const getResourceType = (req) => {
     resource = req.user.isAdmin ? "decksAdmin" : "decks";
   }
   if (resource === "auth") {
-    // login or register
+    // resource = "login" or "register"
     resource = req.path.replace(/\//g, "");
   }
   return resource;
