@@ -7,7 +7,7 @@ const { ACTION_TYPE, ACCESS_TYPE, ALLOWED_DECK_FIELDS } = require("../constants"
 const Deck = require("../models/Deck");
 const Card = require("../models/Card");
 const User = require("../models/User");
-const { isEmpty, validateReqBodyFields } = require("../utils/helpers");
+const { isEmpty } = require("../utils/helpers");
 
 
 // Get decks by username or userId. If both are given, userId is used
@@ -35,9 +35,8 @@ module.exports.getDecksByUser = catchAsync(async (req, res) => {
 });
 
 module.exports.createDeck = catchAsync(async (req, res) => {
-  const validBody = await validateReqBodyFields(ALLOWED_DECK_FIELDS, req.body);
   const deck = await new Deck({
-    ...validBody,
+    ...req.body,
     owner: req.user.userId,
   }).save();
 
@@ -45,22 +44,29 @@ module.exports.createDeck = catchAsync(async (req, res) => {
 });
 
 module.exports.showDeck = catchAsync(async (req, res) => {
-  const deck = await Deck.findById(req.params.deckId);
-  if (!deck) throw new NotFoundError("Deck not found");
-  await deck.authorizeUser(ACTION_TYPE.READ, req.user?.userId, req.body?.password)
+  const deck = await Deck.findById(req.params.deckId)
   res.status(StatusCodes.OK).json({ deck });
 });
 
 module.exports.updateDeck = catchAsync(async (req, res) => {
-  const deck = await Deck.findById(req.params.deckId);
-  if (!deck) throw new NotFoundError("Deck not found")
-
-  const userRole = await deck.authorizeUser(ACTION_TYPE.EDIT, req.user.userId, req.body?.password)
-  const validBody = await deck.validateBodyByUserRole(req.body, userRole)
+  const deck = await Deck.findById(req.params.deckId)
+  if (req.body.hasOwnProperty("password")) {
+    await deck.hashPassword(req.body.password);
+  }
+  if (
+    !deck.password &&
+    (req.body.editableBy === ACCESS_TYPE.PASSWORD_PROTECTED ||
+      req.body.visibleTo === ACCESS_TYPE.PASSWORD_PROTECTED)
+  ) {
+    throw new BadRequestError(
+      "Deck has no password. Please create a password."
+    );
+  }
+  const {password, ...otherData} = req.body 
 
   const updatedDeck = await Deck.findByIdAndUpdate(
-    deck._id,
-    { $set: validBody },
+    req.params.deckId,
+    { $set: otherData },
     { new: true, runValidators: true },
   );
 

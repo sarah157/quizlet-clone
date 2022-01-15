@@ -99,7 +99,7 @@ deckSchema.methods.validateBodyByUserRole = async function (requestBody, userRol
       "Deck has no password. Please create a password."
     );
   }
-  delete validBody.password;
+  delete validBody.password; // already saved hashed password
   return validBody;
 };
 

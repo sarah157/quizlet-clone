@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose")
-const { AuthError, ForbiddenError, BadRequestError } = require("../utils/errors");
+const { AuthError, ForbiddenError, BadRequestError, NotFoundError } = require("../utils/errors");
+const { isEmpty } = require("../utils/helpers");
+const Deck = require("../models/Deck")
+const {ACCESS_TYPE, ACTION_TYPE} = require("../constants")
 
 // verify token
 const authenticate = async (req, res, next) => {
@@ -21,14 +24,47 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+
+
 const authorize = function (req, res, next) {
-  if (!mongoose.isValidObjectId(req.params.userId)) {
-    throw new BadRequestError("Please enter a valid ObjectId")
+  try {
+
+    if (!mongoose.isValidObjectId(req.params.userId)) {
+      throw new BadRequestError("Please enter a valid ObjectId")
+    }
+    if (req.user.userId !== req.params.userId) {
+      throw new ForbiddenError();
+    }
+    next();
+  } catch (error) {
+    next(error)
   }
-  if (req.user.userId !== req.params.userId) {
-    throw new ForbiddenError();
-  }
+};
+
+
+
+const authorizeDeckAccess = async (req, res, next) => {
+  try {
+    const actionType = req.method === 'GET' ? ACTION_TYPE.READ : ACTION_TYPE.EDIT
+    const deck = await Deck.findById(req.params.deckId)
+    if (!deck) throw new NotFoundError("Deck not found")
+    
+    if (deck.owner.toString() !== req.user?.userId) {
+      if (deck[actionType] === ACCESS_TYPE.PRIVATE) {
+        throw new ForbiddenError();
+      }
+      if (deck[actionType] === ACCESS_TYPE.PASSWORD_PROTECTED) {
+        if (!req.body.password) throw new BadRequestError("Password required");
+        const isMatch = await deck.comparePassword(req.body.password);
+        if (!isMatch) throw new AuthError("Incorrect Password");
+    }
+      if (req.user) req.user.isAdmin = false;
+    }
+    else req.user.isAdmin = true;
   next();
+  } catch (error) {
+    next(error)
+}
 };
 
 // For public GET routes, allow access to private resources if current user is owner of resource
@@ -39,4 +75,4 @@ const optionalAuth = function (req, res, next) {
   });
 };
 
-module.exports = { authenticate, optionalAuth, authorize };
+module.exports = { authenticate, optionalAuth, authorize, authorizeDeckAccess };

@@ -6,7 +6,6 @@ const {ACTION_TYPE, ALLOWED_CARD_FIELDS} = require("../constants")
 
 const Card = require("../models/Card");
 const Deck = require("../models/Deck");
-const { validateReqBodyFields } = require("../utils/helpers");
 
 module.exports.getCards = catchAsync(async (req, res) => {
   const { deckId } = req.query
@@ -27,7 +26,6 @@ module.exports.createCard = catchAsync(async (req, res) => {
   const deck = await Deck.findById(data.deckId);
   if (!deck) throw new NotFoundError("Deck not found");
 
-  const validBody = await validateReqBodyFields(ALLOWED_CARD_FIELDS, data)
   const card = await new Card(validBody).save()
 
   const maxIndex = deck.cards.length - 1;
@@ -46,8 +44,6 @@ module.exports.updateCard = catchAsync(async (req, res) => {
   
   const deck = await Deck.findById(card.deckId)
   deck.authorizeUser(ACTION_TYPE.EDIT, req.user.userId, req.body?.password)
-  
-  const validBody = await validateReqBodyFields(ALLOWED_CARD_FIELDS, req.body)
 
   const updatedCard = await Card.findByIdAndUpdate(req.params.cardId,
     { $set: validBody },

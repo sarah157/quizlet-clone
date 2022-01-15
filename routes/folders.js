@@ -1,19 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const folders = require('../controllers/folders')
-const { optionalAuth, authenticate } = require('../middleware/auth')
+const { optionalAuth, authenticate, authorize } = require('../middleware/auth')
+const { validatePatch, validatePost} = require('../middleware/validators');
 
 router.route('/')
     .get(optionalAuth, folders.getFoldersByUser)
-    .post(authenticate, folders.createFolder)
+    .post(authenticate, validatePost, folders.createFolder)
 
 router.route('/:folderId/')
-    .get(optionalAuth, folders.showFolder)
-    .patch(authenticate, folders.updateFolder)
+    .get(optionalAuth, folders.showFolder)  
+    .patch(authenticate, validatePatch, folders.updateFolder)
     .delete(authenticate, folders.deleteFolder);
 
 router.route('/:folderId/decks')
-    .get(optionalAuth, folders.getFolderDecks)
+    .get(optionalAuth, folders.getFolderDecks) 
     .post(authenticate, folders.addDeck)
 
 router.route('/:folderId/decks/:deckId')

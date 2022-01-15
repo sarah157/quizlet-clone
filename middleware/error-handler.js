@@ -14,7 +14,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   if (err.name === "ValidationError") {
     customError.msg = Object.values(err.errors)
       .map((item) => item.message)
-      .join(" ;");
+      .join("; ");
     customError.statusCode = StatusCodes.UNPROCESSABLE_ENTITY;
   }
 

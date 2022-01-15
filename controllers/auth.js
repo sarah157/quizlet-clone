@@ -5,34 +5,33 @@ const { BadRequestError, AuthError } = require('../utils/errors')
 const catchAsync = require('../utils/catchAsync')
 
 const register = catchAsync(async (req, res) => {
-  const user = await new User({ ...req.body }).save();
+  const { username, password, email } = req.body;
+  const user = await new User({ username, password, email }).save();
   const token = user.createJWT()
-  const {password, ...other} = user._doc
+  const {password:p, ...other} = user._doc
   res.status(StatusCodes.CREATED).json({user: {...other}, token })
 })
 
 const login = catchAsync(async (req, res) => {
-  const { email, password } = req.body
+  const { username, password } = req.body
 
-  if (!email || !password) {
+  if (!username || !password) {
     throw new BadRequestError("Please provide an email and password")
   }
-  const user = await User.findOne({ email })
-  if (!user) {
-    throw new AuthError('Invalid Credentials')
-  }
+  const user = await User.findOne({ username })
+  if (!user) throw new AuthError('Invalid Credentials')
+
   // compare password
   const isPasswordCorrect = await user.comparePassword(password)
-  if (!isPasswordCorrect) {
-    throw new AuthError('Invalid Credentials')
-  }
+  if (!isPasswordCorrect) throw new AuthError('Invalid Credentials')
+
   // if pass matches, generate token
   const token = user.createJWT()
   res
     .status(StatusCodes.OK)
     .json(
       {
-        user: { userId: user._id, name: user.name },
+        user: { id: user._id, username: user.username, email: user.email },
         token
       })
 })

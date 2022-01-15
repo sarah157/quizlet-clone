@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const decks = require('../controllers/decks');
-const { authenticate, optionalAuth } = require('../middleware/auth');
+const { authenticate, optionalAuth, authorizeDeckAccess} = require('../middleware/auth');
+const { validatePatch, validatePost} = require('../middleware/validators');
 
 router.route('/')
     .get(optionalAuth, decks.getDecksByUser)
-    .post(authenticate, decks.createDeck)
+    .post(authenticate, validatePost, decks.createDeck)
 
 router.route('/:deckId/')
-    .get(optionalAuth, decks.showDeck)
-    .patch(authenticate, decks.updateDeck)
+    .get(optionalAuth, authorizeDeckAccess, decks.showDeck)
+    .patch(authenticate, authorizeDeckAccess, validatePatch, decks.updateDeck)
     .delete(authenticate, decks.deleteDeck);
 
 router.route('/:deckId/cardOrder')

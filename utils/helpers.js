@@ -4,16 +4,16 @@ const isEmpty = (inputObject) => {
   return Object.keys(inputObject).length === 0;
 };
 
-const validateReqBodyFields = async (allowedFields, body) => {
-    if (isEmpty(body)) throw new BadRequestError("Fields required");
+const getResourceType = (req) => {
+  let resource = req.baseUrl.replace(/\//g, "");
+  if (resource === "decks") {
+    resource = req.user.isAdmin ? "decksAdmin" : "decks";
+  }
+  if (resource === "auth") {
+    // login or register
+    resource = req.path.replace(/\//g, "");
+  }
+  return resource;
+};
 
-    const filteredBody = {};
-
-    Object.keys(body).forEach(f => {
-      if (allowedFields.includes(f)) filteredBody[f] = body[f]
-      else throw new BadRequestError(`Invalid field entered: ${f}`);
-    })
-    return filteredBody;
-}
-
-module.exports = { isEmpty, validateReqBodyFields };
+module.exports = { isEmpty, getResourceType };
