@@ -1,17 +1,19 @@
-const isEmpty = (inputObject) => {
-  return Object.keys(inputObject).length === 0;
+const isEmpty = (obj) => {
+  return Object.keys(obj).length === 0;
 };
 
+const trim = (reqUrl) => reqUrl.replace(/\//g, "")
+
 const getResourceType = (req) => {
-  let resource = req.baseUrl.replace(/\//g, "");
+  let resource = trim(req.baseUrl)
   if (resource === "decks") {
     resource = req.user.isAdmin ? "decksAdmin" : "decks";
   }
   if (resource === "auth") {
     // resource = "login" or "register"
-    resource = req.path.replace(/\//g, "");
+    resource = trim(req.path)
   }
   return resource;
 };
 
-module.exports = { isEmpty, getResourceType };
+module.exports = { isEmpty, trim, getResourceType };

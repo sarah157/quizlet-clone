@@ -25,6 +25,7 @@ Unlike Quizlet, you can create markdown flashcards with code or fancy math equat
 
 ### Todo
 - CRUD Classes
-  - Add Folders, Decks, and Members to a Class
-  - Admin can modify edit permissions to Folders and Decks
-- Spaced-repetition Cards (?)
+  - Admin can add Folders, Decks, and Members to a Class.
+  - Admin can remove all Folders, Decks, and Members
+  - Members can add Decks and Members (if allowed by Admin)
+  - Members can only remove their own Decks

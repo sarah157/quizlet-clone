@@ -14,7 +14,7 @@ const deckSchema = new Schema(
       maxlength: 60,
       required: [true, "Deck title required"],
     },
-    description: String,
+    description: {type: String, default: ""},
     editableBy: {
       type: Number,
       min: 0,

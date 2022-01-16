@@ -3,7 +3,10 @@ const { Schema, model } = require("mongoose");
 const cardSchema = new Schema(
   {
     content: { type: String, required: [true, "Card content cannot be blank"] },
-    starred: { type: Boolean, default: false },
+    starredBy: [{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }],
     deckId: {
       type: Schema.Types.ObjectId,
       ref: "Deck",

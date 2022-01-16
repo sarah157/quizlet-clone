@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const users = require('../controllers/users');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorizeUserAccess } = require('../middleware/auth');
 const { validatePatch } = require('../middleware/validators');
 
 
@@ -9,9 +9,9 @@ const { validatePatch } = require('../middleware/validators');
 //     .get(searchUsernames)
 
 router.route("/:userId")
-    .get(authenticate, authorize, users.getUser)
-    .patch(authenticate, authorize, validatePatch, users.updateUser)
-    .delete(authenticate, authorize, users.deleteUser)
+    .get(authenticate, authorizeUserAccess, users.getUser)
+    .patch(authenticate, authorizeUserAccess, validatePatch, users.updateUser)
+    .delete(authenticate, authorizeUserAccess, users.deleteUser)
 
 
 module.exports = router;

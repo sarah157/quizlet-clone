@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const cards = require("../controllers/cards");
-const { authenticate, authorize, optionalAuth, authorizeCardAccess } = require("../middleware/auth");
+const { authenticate, optionalAuth, authorizeCardAccess } = require("../middleware/auth");
 const { validatePatch, validatePost } = require("../middleware/validators");
 
 router

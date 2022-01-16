@@ -8,6 +8,7 @@ const folderSchema = new Schema(
       maxlength: 60,
       required: [true, "Folder title cannot be blank"],
     },
+    description: {type: String, default: ""},
     decks: [
       {
         type: Schema.Types.ObjectId,

@@ -1,9 +1,15 @@
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose")
-const { AuthError, ForbiddenError, BadRequestError, NotFoundError } = require("../utils/errors");
-const Deck = require("../models/Deck")
-const Card = require("../models/Card")
-const {ACCESS_TYPE, ACTION_TYPE} = require("../constants")
+const mongoose = require("mongoose");
+const {
+  AuthError,
+  ForbiddenError,
+  BadRequestError,
+  NotFoundError,
+} = require("../utils/errors");
+const Deck = require("../models/Deck");
+const Card = require("../models/Card");
+const Folder = require("../models/Folder");
+const { ACCESS_TYPE, ACTION_TYPE } = require("../constants");
 
 // verify token
 const authenticate = async (req, res, next) => {
@@ -24,31 +30,48 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+// Optional authentication for public GET routes. Skip any authentication errors
+// Allow access to private resources if current user is owner of resource
+const optionalAuth = function (req, res, next) {
+  authenticate(req, res, function () {
+    next();
+  });
+};
 
-
-const authorize = function (req, res, next) {
+const authorizeUserAccess = function (req, res, next) {
   try {
-
     if (!mongoose.isValidObjectId(req.params.userId)) {
-      throw new BadRequestError("Please enter a valid ObjectId")
+      throw new BadRequestError("Please enter a valid ObjectId");
     }
     if (req.user.userId !== req.params.userId) {
       throw new ForbiddenError();
     }
     next();
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
-
+const authorizeFolderAccess = async (req, res, next) => {
+  try {
+    const folder = await Folder.findById(req.params.folderId);
+    if (!folder) throw new NotFoundError("Folder not found");
+    if (folder.owner.toString() !== req.user.userId) {
+      throw new ForbiddenError();
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
 
 const authorizeDeckAccess = async (req, res, next) => {
   try {
-    const actionType = req.method === 'GET' ? ACTION_TYPE.READ : ACTION_TYPE.EDIT
-    const deck = await Deck.findById(req.params.deckId)
-    if (!deck) throw new NotFoundError("Deck not found")
-    
+    const actionType =
+      req.method === "GET" ? ACTION_TYPE.READ : ACTION_TYPE.EDIT;
+    const deck = await Deck.findById(req.params.deckId);
+    if (!deck) throw new NotFoundError("Deck not found");
+
     if (deck.owner.toString() !== req.user?.userId) {
       console.log(deck[actionType]);
       if (deck[actionType] === ACCESS_TYPE.PRIVATE) {
@@ -58,40 +81,39 @@ const authorizeDeckAccess = async (req, res, next) => {
         if (!req.body.password) throw new BadRequestError("Password required");
         const isMatch = await deck.comparePassword(req.body.password);
         if (!isMatch) throw new AuthError("Incorrect Password");
-    }
+      }
       if (req.user) req.user.isAdmin = false;
-    }
-    else req.user.isAdmin = true;
-  next();
+    } else req.user.isAdmin = true;
+    next();
   } catch (error) {
-    next(error)
-}
+    next(error);
+  }
 };
 const authorizeCardAccess = async (req, res, next) => {
   try {
     let deckId;
-    if (req.baseUrl.replace(/\//g, "") === "cards") { //deckId in query or body
-      deckId = req.query?.deckId || req.body?.deckId
-      if (!deckId) throw new BadRequestError("deckId required")
+    if (req.baseUrl.replace(/\//g, "") === "cards") {
+      // deckId in query or body
+      deckId = req.query?.deckId || req.body?.deckId;
+      if (!deckId) throw new BadRequestError("deckId required");
+    } else {
+      // else, must find Card to get deckId
+      const card = await Card.findById(req.params.cardId);
+      if (!card) throw new NotFoundError("Card not found");
+      deckId = card.deckId;
     }
-    else {
-      const card = await Card.findById(req.params.cardId)
-      if (!card) throw new NotFoundError("Card not found")
-      deckId = card.deckId
-    }
-    req.params.deckId = deckId
+    req.params.deckId = deckId;
     await authorizeDeckAccess(req, res, next);
   } catch (error) {
-    next(error)
-}
+    next(error);
+  }
 };
 
-// For public GET routes, allow access to private resources if current user is owner of resource
-// Skip any auth errors
-const optionalAuth = function (req, res, next) {
-  authenticate(req, res, function () {
-    next();
-  });
+module.exports = {
+  authenticate,
+  optionalAuth,
+  authorizeUserAccess,
+  authorizeFolderAccess,
+  authorizeDeckAccess,
+  authorizeCardAccess,
 };
-
-module.exports = { authenticate, optionalAuth, authorize, authorizeDeckAccess, authorizeCardAccess };
