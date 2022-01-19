@@ -83,7 +83,7 @@ module.exports.deleteDeck = catchAsync(async (req, res, next) => {
   res.status(StatusCodes.OK).json();
 });
 
-module.exports.reorderCards = catchAsync(async (req, res, next) => {
+module.exports.reorderCard = catchAsync(async (req, res, next) => {
   const { index, cardId } = req.body;
   if (!index || !cardId)
     throw new BadRequestError("cardId and index are required");

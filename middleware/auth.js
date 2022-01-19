@@ -11,9 +11,8 @@ const Card = require("../models/Card");
 const Folder = require("../models/Folder");
 const { ACCESS_TYPE, ACTION_TYPE } = require("../constants");
 
-// verify token
+// Authentication (verify token)
 const authenticate = async (req, res, next) => {
-  // check header
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer")) {
@@ -38,6 +37,8 @@ const optionalAuth = function (req, res, next) {
   });
 };
 
+// Authorization
+// Users routes
 const authorizeUserAccess = function (req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.userId)) {
@@ -52,6 +53,7 @@ const authorizeUserAccess = function (req, res, next) {
   }
 };
 
+// Folders routes
 const authorizeFolderAccess = async (req, res, next) => {
   try {
     const folder = await Folder.findById(req.params.folderId);
@@ -65,10 +67,11 @@ const authorizeFolderAccess = async (req, res, next) => {
   }
 };
 
+// Decks (+ nested cards) routes
 const authorizeDeckAccess = async (req, res, next) => {
   try {
     const actionType =
-      req.method === "GET" ? ACTION_TYPE.READ : ACTION_TYPE.EDIT;
+    req.method === "GET" ? ACTION_TYPE.READ : ACTION_TYPE.EDIT;
     const deck = await Deck.findById(req.params.deckId);
     if (!deck) throw new NotFoundError("Deck not found");
 
@@ -89,25 +92,6 @@ const authorizeDeckAccess = async (req, res, next) => {
     next(error);
   }
 };
-const authorizeCardAccess = async (req, res, next) => {
-  try {
-    let deckId;
-    if (req.baseUrl.replace(/\//g, "") === "cards") {
-      // deckId in query or body
-      deckId = req.query?.deckId || req.body?.deckId;
-      if (!deckId) throw new BadRequestError("deckId required");
-    } else {
-      // else, must find Card to get deckId
-      const card = await Card.findById(req.params.cardId);
-      if (!card) throw new NotFoundError("Card not found");
-      deckId = card.deckId;
-    }
-    req.params.deckId = deckId;
-    await authorizeDeckAccess(req, res, next);
-  } catch (error) {
-    next(error);
-  }
-};
 
 module.exports = {
   authenticate,
@@ -115,5 +99,4 @@ module.exports = {
   authorizeUserAccess,
   authorizeFolderAccess,
   authorizeDeckAccess,
-  authorizeCardAccess,
 };

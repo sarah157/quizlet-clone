@@ -1,11 +1,15 @@
 const { BadRequestError } = require("../utils/errors");
 const { REQUIRED_FIELDS, EDITABLE_FIELDS } = require("../constants");
-const { isEmpty, getResourceType } = require("../utils/helpers");
+const { isEmpty } = require("../utils/helpers");
 
 const validatePatch = (resource) => async (req, res, next) => {
   try {
     if (isEmpty(req.body)) throw new BadRequestError("Fields required");
-   
+    
+    if (resource === 'decks') {
+      resource = req.user.isAdmin ? "decksAdmin" : "decksMember"
+    }
+
     const validFields = EDITABLE_FIELDS[resource];
 
     const filteredBody = {};
@@ -36,4 +40,5 @@ const validatePost = (resource) => async (req, res, next) => {
     next(error);
   }
 };
+
 module.exports = { validatePatch, validatePost };

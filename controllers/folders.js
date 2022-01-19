@@ -99,7 +99,6 @@ module.exports.removeDeck = catchAsync(async (req, res) => {
     res.status(StatusCodes.NOT_MODIFIED).json();
     return;
   }
-
   folder.decks = folder.decks.filter(
     (deckId) => deckId?.toString() !== req.params.deckId
   );

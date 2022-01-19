@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router({mergeParams: true});
 const cards = require("../controllers/cards");
-const decks = require("../controllers/decks");
 const { authenticate, optionalAuth, authorizeDeckAccess } = require("../middleware/auth");
 const { validatePatch, validatePost } = require("../middleware/validators");
-
   
 router
   .route("/")
@@ -23,5 +21,4 @@ router
   .put(authenticate, cards.starCard)
   .delete(authenticate, cards.unstarCard);
 
-  
 module.exports = router;

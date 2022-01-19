@@ -4,7 +4,6 @@ const users = require('../controllers/users');
 const { authenticate, authorizeUserAccess } = require('../middleware/auth');
 const { validatePatch } = require('../middleware/validators');
 
-
 // router.route("/")
 //     .get(searchUsernames)
 

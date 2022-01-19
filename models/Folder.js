@@ -1,5 +1,4 @@
 const { Schema, model } = require("mongoose");
-const Card = require("./Card");
 const folderSchema = new Schema(
   {
     title: {

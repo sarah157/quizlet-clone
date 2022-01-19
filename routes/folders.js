@@ -8,7 +8,6 @@ const {
   authorizeFolderAccess,
 } = require("../middleware/auth");
 
-
 router
   .route("/")
   .get(optionalAuth, folders.getFoldersByUser)
