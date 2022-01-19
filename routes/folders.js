@@ -12,7 +12,7 @@ const {
 router
   .route("/")
   .get(optionalAuth, folders.getFoldersByUser)
-  .post(authenticate, validatePost, folders.createFolder);
+  .post(authenticate, validatePost('folders'), folders.createFolder);
 
 router
   .route("/:folderId/")
@@ -20,7 +20,7 @@ router
   .patch(
     authenticate,
     authorizeFolderAccess,
-    validatePatch,
+    validatePatch('folders'),
     folders.updateFolder
   )
   .delete(authenticate, authorizeFolderAccess, folders.deleteFolder);

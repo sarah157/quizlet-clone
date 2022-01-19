@@ -34,7 +34,7 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/folders", folderRoutes);
 app.use("/decks", deckRoutes);
-app.use("/cards", cardRoutes);
+app.use("/decks/:deckId/cards", cardRoutes);
 
 // Error Handler Middleware
 app.use(notFoundMiddleware);

@@ -10,7 +10,7 @@ const { validatePatch } = require('../middleware/validators');
 
 router.route("/:userId")
     .get(authenticate, authorizeUserAccess, users.getUser)
-    .patch(authenticate, authorizeUserAccess, validatePatch, users.updateUser)
+    .patch(authenticate, authorizeUserAccess, validatePatch('users'), users.updateUser)
     .delete(authenticate, authorizeUserAccess, users.deleteUser)
 
 

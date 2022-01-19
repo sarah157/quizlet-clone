@@ -2,10 +2,10 @@ const { BadRequestError } = require("../utils/errors");
 const { REQUIRED_FIELDS, EDITABLE_FIELDS } = require("../constants");
 const { isEmpty, getResourceType } = require("../utils/helpers");
 
-const validatePatch = async (req, res, next) => {
+const validatePatch = (resource) => async (req, res, next) => {
   try {
     if (isEmpty(req.body)) throw new BadRequestError("Fields required");
-    const resource = getResourceType(req);
+   
     const validFields = EDITABLE_FIELDS[resource];
 
     const filteredBody = {};
@@ -21,20 +21,16 @@ const validatePatch = async (req, res, next) => {
   }
 };
 
-const validatePost = async (req, res, next) => {
+const validatePost = (resource) => async (req, res, next) => {
   try {
     if (isEmpty(req.body)) throw new BadRequestError("Fields required");
-      const resource = getResourceType(req);
-      console.log(resource);
-      const requriedFields = REQUIRED_FIELDS[resource];
-      console.log(requriedFields);
+    const requriedFields = REQUIRED_FIELDS[resource];
 
     requriedFields.forEach((f) => {
       if (!req.body.hasOwnProperty(f)) {
         throw new BadRequestError(`Please enter a(n) ${f}`);
       }
     });
-
     next();
   } catch (error) {
     next(error);

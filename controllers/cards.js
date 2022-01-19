@@ -7,16 +7,17 @@ const Card = require("../models/Card");
 const Deck = require("../models/Deck");
 
 module.exports.getCards = catchAsync(async (req, res) => {
-  const { deckId } = req.query;
-  const cards = await Card.find({ deckId }).sort({ createdAt: -1 });
+  console.log(req.params.deckId);
+  const cards = await Card.find({ deckId: req.params.deckId }).sort({ createdAt: -1 });
   res.status(StatusCodes.OK).send({ cards });
 });
 
 module.exports.createCard = catchAsync(async (req, res) => {
   const { index, ...data } = req.body;
-  const card = await new Card(data).save()
+  console.log(req.params);
+  const card = await new Card({...data, deckId: req.params.deckId}).save()
 
-  const deck = await Deck.findById(data.deckId);
+  const deck = await Deck.findById(req.params.deckId);
   const maxIndex = deck.cards.length - 1;
   
   if (!deck.cards.length || index === undefined || index >= maxIndex) {

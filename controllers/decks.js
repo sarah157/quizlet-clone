@@ -3,15 +3,11 @@ const mongoose = require('mongoose')
 const catchAsync = require("../utils/catchAsync");
 const { NotFoundError, BadRequestError } = require("../utils/errors");
 const {
-  ACTION_TYPE,
   ACCESS_TYPE,
-  ALLOWED_DECK_FIELDS,
 } = require("../constants");
 
 const Deck = require("../models/Deck");
-const Card = require("../models/Card");
 const User = require("../models/User");
-const { isEmpty } = require("../utils/helpers");
 
 // Get decks by username or userId. If both are given, userId is used
 module.exports.getDecksByUser = catchAsync(async (req, res) => {
@@ -93,18 +89,14 @@ module.exports.reorderCards = catchAsync(async (req, res, next) => {
     throw new BadRequestError("cardId and index are required");
 
   const deck = await Deck.findById(req.params.deckId);
-  if (!deck) throw new NotFoundError("Deck not found");
-
-  const card = await Card.findById(cardId);
-  if (!card) throw new NotFoundError("Card not found");
-
   const maxIndex = deck.cards.length - 1;
 
-  // Remove card from deck then insert into correct position
+  // Remove card from deck 
   deck.cards = deck.cards.filter((c) => c._id.toString() !== cardId);
-  if (!deck.cards.length || index >= maxIndex) deck.cards.push(card._id);
-  else deck.cards.splice(index, 0, card._id);
+  // Then insert into correct position
+  if (!deck.cards.length || index >= maxIndex) deck.cards.push(cardId);
+  else deck.cards.splice(index, 0, cardId);
   deck.save();
 
-  res.status(StatusCodes.CREATED).json({ card });
+  res.status(StatusCodes.OK).json();
 });
