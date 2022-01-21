@@ -27,7 +27,7 @@ module.exports.getFoldersByUser = catchAsync(async (req, res) => {
     { $project: { title: 1, description: 2, decksCount: { $size: "$decks" } } },
   ]);
 
-  res.status(StatusCodes.OK).json({ folders });
+  res.status(StatusCodes.OK).json({ ...folders });
 });
 
 module.exports.createFolder = catchAsync(async (req, res) => {
@@ -36,7 +36,7 @@ module.exports.createFolder = catchAsync(async (req, res) => {
     owner: req.user.userId,
   }).save();
 
-  res.status(StatusCodes.CREATED).json({ folder });
+  res.status(StatusCodes.CREATED).json({ ...folder });
 });
 
 module.exports.showFolder = catchAsync(async (req, res) => {
@@ -58,7 +58,7 @@ module.exports.showFolder = catchAsync(async (req, res) => {
     },
   ]);
 
-  res.status(StatusCodes.OK).json({ folder: decks });
+  res.status(StatusCodes.OK).json({ ...folder, ...decks });
 });
 
 module.exports.updateFolder = catchAsync(async (req, res) => {
@@ -67,7 +67,7 @@ module.exports.updateFolder = catchAsync(async (req, res) => {
     { $set: req.body },
     { new: true, runValidators: true }
   );
-  res.status(StatusCodes.OK).json({ folder });
+  res.status(StatusCodes.OK).json({ ...folder });
 });
 
 module.exports.deleteFolder = catchAsync(async (req, res, next) => {
