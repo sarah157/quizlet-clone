@@ -1,15 +1,17 @@
-import axios from "axios"
 import { useState, useEffect} from "react";
+import { login } from "./services/authService";
+import { createDeck } from "./services/dataService";
 
 function App() {
   const [data, setData] = useState()
   useEffect(() => {
-    axios.get("http://localhost:3005/decks/?username=sarora").then(res=>setData(res.data))
+    createDeck({title: "test deck"}).then(res=>setData(res.data))
   }, []);
   return (
     <div>
-{    console.log(data)
-}      hello</div>
+    {console.log(data)}
+      hello
+    </div>
   );
 }
 
