@@ -9,7 +9,7 @@ const Deck = require("../models/Deck");
 module.exports.getCards = catchAsync(async (req, res) => {
   console.log(req.params.deckId);
   const cards = await Card.find({ deckId: req.params.deckId }).sort({ createdAt: -1 });
-  res.status(StatusCodes.OK).send({ ...cards });
+  res.status(StatusCodes.OK).send(cards);
 });
 
 module.exports.createCard = catchAsync(async (req, res) => {
@@ -25,7 +25,7 @@ module.exports.createCard = catchAsync(async (req, res) => {
   } else deck.cards.splice(index, 0, card._id);
   deck.save();
 
-  res.status(StatusCodes.CREATED).json({ ...card });
+  res.status(StatusCodes.CREATED).json(card);
 });
 
 module.exports.updateCard = catchAsync(async (req, res) => {
@@ -41,7 +41,7 @@ module.exports.showCard = catchAsync(async (req, res) => {
   const card = await Card.findById(req.params.cardId);
   if (!card) throw new NotFoundError("Card not found");
   
-  res.status(StatusCodes.OK).json({ ...card });
+  res.status(StatusCodes.OK).json(card);
 });
 
 module.exports.deleteCard = catchAsync(async (req, res) => {

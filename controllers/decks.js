@@ -36,7 +36,7 @@ module.exports.getDecksByUser = catchAsync(async (req, res) => {
     },
   ]);
 
-  res.status(StatusCodes.OK).json({ ...decks });
+  res.status(StatusCodes.OK).json(decks);
 });
 
 module.exports.createDeck = catchAsync(async (req, res) => {
@@ -45,12 +45,12 @@ module.exports.createDeck = catchAsync(async (req, res) => {
     owner: req.user.userId,
   }).save();
 
-  res.status(StatusCodes.CREATED).json({ ...deck });
+  res.status(StatusCodes.CREATED).json(deck);
 });
 
 module.exports.showDeck = catchAsync(async (req, res) => {
   const deck = await Deck.findById(req.params.deckId).populate({path: "cards"})
-  res.status(StatusCodes.OK).json({ ...deck });
+  res.status(StatusCodes.OK).json(deck);
 });
 
 module.exports.updateDeck = catchAsync(async (req, res) => {
@@ -75,7 +75,7 @@ module.exports.updateDeck = catchAsync(async (req, res) => {
     { new: true, runValidators: true }
   );
 
-  res.status(StatusCodes.OK).json({ ...updatedDeck });
+  res.status(StatusCodes.OK).json(updatedDeck);
 });
 
 module.exports.deleteDeck = catchAsync(async (req, res, next) => {
