@@ -7,7 +7,7 @@ const app = express();
 const cors = require("cors");
 const mongoSanitize = require("express-mongo-sanitize");
 const bodyParser = require("body-parser");
-
+const morgan = require("morgan");
 const connectDB = require("./db");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 const notFoundMiddleware = require("./middleware/not-found");
@@ -23,11 +23,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use(
-  mongoSanitize({
-    replaceWith: "_",
-  })
-);
+app.use(morgan('tiny'));
+app.use(mongoSanitize({ replaceWith: "_" }));
 
 // Routes
 app.use("/auth", authRoutes);

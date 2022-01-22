@@ -9,7 +9,7 @@ const register = catchAsync(async (req, res) => {
   const user = await new User({ username, password, email }).save();
   const token = user.createJWT()
   const {password:p, ...other} = user._doc
-  res.status(StatusCodes.CREATED).json({user: {...other}, token })
+  res.status(StatusCodes.CREATED).json({...other, token })
 })
 
 const login = catchAsync(async (req, res) => {
@@ -30,10 +30,7 @@ const login = catchAsync(async (req, res) => {
   res
     .status(StatusCodes.OK)
     .json(
-      {
-        user: { id: user._id, username: user.username, email: user.email },
-        token
-      })
+        { id: user._id, username: user.username, email: user.email, token })
 })
 
 module.exports = {
