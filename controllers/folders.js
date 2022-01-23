@@ -47,7 +47,7 @@ module.exports.showFolder = catchAsync(async (req, res) => {
       ? { _id: { $in: folder.decks }, visibleTo: ACCESS_TYPE.PUBLIC }
       : { _id: { $in: folder.decks } };
 
-  const decks = await Deck.aggregate([
+  const modifiedDecks = await Deck.aggregate([
     { $match: match },
     {
       $project: {
@@ -57,8 +57,9 @@ module.exports.showFolder = catchAsync(async (req, res) => {
       },
     },
   ]);
+  const {decks, ...doc} = folder._doc
 
-  res.status(StatusCodes.OK).json(folder, decks);
+  res.status(StatusCodes.OK).json({ ...doc, decks: modifiedDecks });
 });
 
 module.exports.updateFolder = catchAsync(async (req, res) => {

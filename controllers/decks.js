@@ -1,14 +1,10 @@
 const { StatusCodes } = require("http-status-codes");
-const mongoose = require('mongoose')
 const catchAsync = require("../utils/catchAsync");
 const { NotFoundError, BadRequestError } = require("../utils/errors");
-const {
-  ACCESS_TYPE,
-} = require("../constants");
+const { ACCESS_TYPE } = require("../constants");
 
 const Deck = require("../models/Deck");
 const User = require("../models/User");
-const { isStarred } = require("./cards");
 
 // Get decks by username or userId. If both are given, userId is used
 module.exports.getDecksByUser = catchAsync(async (req, res) => {
@@ -27,13 +23,13 @@ module.exports.getDecksByUser = catchAsync(async (req, res) => {
       : { owner: user._id, visibleTo: ACCESS_TYPE.PUBLIC };
 
   const decks = await Deck.aggregate([
-    { $match: match},
+    { $match: match },
     {
       $project: {
         title: 1,
         description: 2,
-        cardsCount: { $size: "$cards" }
-      }
+        cardsCount: { $size: "$cards" },
+      },
     },
   ]);
 
@@ -50,15 +46,20 @@ module.exports.createDeck = catchAsync(async (req, res) => {
 });
 
 module.exports.showDeck = catchAsync(async (req, res) => {
-  const deck = await Deck.findById(req.params.deckId).populate({ path: "cards" })
+  const deck = await Deck.findById(req.params.deckId).populate({
+    path: "cards",
+  });
   // TODO: use mongoose aggregrate function instead
-  const modifiedCards = []
-  deck.cards.forEach(card => {
-    const {starredBy, ...other} = card._doc
-    modifiedCards.push( { ...other, starred: card.isStarred(req.user.userId) })
-  })
-  const { cards, ...other } = deck._doc;
-  res.status(StatusCodes.OK).json({...other, cards: modifiedCards});
+  const modifiedCards = [];
+  deck.cards.forEach((card) => {
+    const { starredBy, ...cardDoc } = card._doc;
+    modifiedCards.push({
+      ...cardDoc,
+      starred: card.isStarred(req.user.userId),
+    });
+  });
+  const { cards, ...deckDoc } = deck._doc;
+  res.status(StatusCodes.OK).json({ ...deckDoc, cards: modifiedCards });
 });
 
 module.exports.updateDeck = catchAsync(async (req, res) => {
@@ -99,7 +100,7 @@ module.exports.reorderCard = catchAsync(async (req, res, next) => {
   const deck = await Deck.findById(req.params.deckId);
   const maxIndex = deck.cards.length - 1;
 
-  // Remove card from deck 
+  // Remove card from deck
   deck.cards = deck.cards.filter((c) => c._id.toString() !== cardId);
   // Then insert into correct position
   if (!deck.cards.length || index >= maxIndex) deck.cards.push(cardId);

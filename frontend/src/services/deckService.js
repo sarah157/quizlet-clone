@@ -1,8 +1,7 @@
 import api from "./api"
 
-export const getUserDecks = () => {
-    const user = localStorage.getItem("user")
-    return api.get(`/decks?username=${JSON.parse(user).username}`);
+export const getUserDecks = (username) => {
+    return api.get(`/decks?username=${username}`);
 }
 export const createDeck = (data) => {
     return api.post("/decks", data);
