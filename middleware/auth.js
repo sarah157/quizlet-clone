@@ -67,7 +67,7 @@ const authorizeFolderAccess = async (req, res, next) => {
   }
 };
 
-// Decks (+ nested cards) routes
+// Decks routes
 const authorizeDeckAccess = async (req, res, next) => {
   try {
     const actionType =
@@ -94,6 +94,7 @@ const authorizeDeckAccess = async (req, res, next) => {
   }
 };
 
+// Cards routes (authorizaton dependant on decks)
 const authorizeCardAccess = async (req, res, next) => {
   try {
     let deckId;

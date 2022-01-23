@@ -8,6 +8,7 @@ const {
 
 const Deck = require("../models/Deck");
 const User = require("../models/User");
+const { isStarred } = require("./cards");
 
 // Get decks by username or userId. If both are given, userId is used
 module.exports.getDecksByUser = catchAsync(async (req, res) => {
@@ -49,8 +50,15 @@ module.exports.createDeck = catchAsync(async (req, res) => {
 });
 
 module.exports.showDeck = catchAsync(async (req, res) => {
-  const deck = await Deck.findById(req.params.deckId).populate({path: "cards"})
-  res.status(StatusCodes.OK).json(deck);
+  const deck = await Deck.findById(req.params.deckId).populate({ path: "cards" })
+  // TODO: use mongoose aggregrate function instead
+  const modifiedCards = []
+  deck.cards.forEach(card => {
+    const {starredBy, ...other} = card._doc
+    modifiedCards.push( { ...other, starred: card.isStarred(req.user.userId) })
+  })
+  const { cards, ...other } = deck._doc;
+  res.status(StatusCodes.OK).json({...other, cards: modifiedCards});
 });
 
 module.exports.updateDeck = catchAsync(async (req, res) => {

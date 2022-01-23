@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose");
+const  { Schema,Types, model } = require("mongoose");
 
 const cardSchema = new Schema(
   {
@@ -25,5 +25,8 @@ const cardSchema = new Schema(
   { timestamps: true }
 );
 
+cardSchema.methods.isStarred = function (currentUser) {
+  return this.starredBy.includes(Types.ObjectId(currentUser));
+};
 
 module.exports = model("Card", cardSchema);
