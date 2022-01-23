@@ -71,8 +71,9 @@ const authorizeFolderAccess = async (req, res, next) => {
 const authorizeDeckAccess = async (req, res, next) => {
   try {
     const actionType =
-    req.method === "GET" ? ACTION_TYPE.READ : ACTION_TYPE.EDIT;
-    const deck = await Deck.findById(req.params.deckId);
+      req.method === "GET" ? ACTION_TYPE.READ : ACTION_TYPE.EDIT;
+    const deckId = req.deckId || req.params.deckId
+    const deck = await Deck.findById(deckId);
     if (!deck) throw new NotFoundError("Deck not found");
 
     if (deck.owner.toString() !== req.user?.userId) {
@@ -93,10 +94,32 @@ const authorizeDeckAccess = async (req, res, next) => {
   }
 };
 
+const authorizeCardAccess = async (req, res, next) => {
+  try {
+    let deckId;
+    if (req.baseUrl === "/cards") {
+
+      // deckId in query or body
+      deckId = req.query?.deckId || req.body?.deckId;
+      if (!deckId) throw new BadRequestError("deckId required");
+    } else {
+      // else, must find Card to get deckId
+      const card = await Card.findById(req.params.cardId);
+      if (!card) throw new NotFoundError("Card not found");
+      deckId = card.deckId;
+    }
+    req.deckId = deckId;
+    await authorizeDeckAccess(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   authenticate,
   optionalAuth,
   authorizeUserAccess,
   authorizeFolderAccess,
+  authorizeCardAccess,
   authorizeDeckAccess,
 };

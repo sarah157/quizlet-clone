@@ -4,7 +4,7 @@ const ACTION_TYPE = { EDIT: "editableBy", READ: "visibleTo" };
 
 const REQUIRED_FIELDS = {
   decks: ["title"],
-  cards: ["content"],
+  cards: ["content", "deckId"],
   folders: ["title"],
   register: ["email", "password", "username"],
   login: ["password", "username"],
