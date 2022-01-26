@@ -1,18 +1,18 @@
 import { Link, useLocation } from "react-router-dom";
 
-const SetHome = () => {
+const Deck = () => {
     const {pathname} = useLocation();
     return ( 
         <>
-            <div className="set-header">
+            <div className="deck-header">
                 <Link to={`${pathname}/study`}>Study</Link>
                 <Link to={`${pathname}/edit`}>Edit</Link>
             </div>
-            <div className="set-main">
+            <div className="deck-main">
                 cards
             </div>
         </>
      );
 }
  
-export default SetHome;
+export default Deck;
