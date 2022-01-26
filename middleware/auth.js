@@ -77,7 +77,6 @@ const authorizeDeckAccess = async (req, res, next) => {
     if (!deck) throw new NotFoundError("Deck not found");
 
     if (deck.owner.toString() !== req.user?.userId) {
-      console.log(deck[actionType]);
       if (deck[actionType] === ACCESS_TYPE.PRIVATE) {
         throw new ForbiddenError();
       }

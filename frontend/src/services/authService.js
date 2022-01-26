@@ -14,6 +14,7 @@ export const register = async (email, username, password) => {
 export const logout = async () => {
     localStorage.removeItem("user")
 }
-export const getCurrentUser = async () => {
-    localStorage.getItem("user");
+export const getCurrentUser = () => {
+    const user = localStorage.getItem("user")
+    return JSON.parse(user);
 }
