@@ -16,7 +16,7 @@ export const deleteFolder = (id) => {
     return api.delete(`folders/${id}`);
 }
 export const addDeckToFolder = (id, deckId) => {
-    return api.post(`folders/${id}/decks`, deckId);
+    return api.post(`folders/${id}/decks`, { deckId });
 }
 export const removeDeckFromFolder = (id, deckId) => {
     return api.delete(`folders/${id}/decks/${deckId}`);
