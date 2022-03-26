@@ -23,9 +23,10 @@ Unlike Quizlet, you can create markdown flashcards with code or fancy math equat
 **Front-end**
 - React
 
-### Todo
-- CRUD Classes
-  - Admin can add Folders, Decks, and Members to a Class.
+### In-progress/todo
+- React front-end
+- CRUD Classrooms
+  - Admin can add Folders, Decks, and Members to a Classroom.
   - Admin can remove all Folders, Decks, and Members
   - Members can add Decks and Members (if allowed by Admin)
   - Members can only remove their own Decks
