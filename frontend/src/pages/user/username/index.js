@@ -4,7 +4,7 @@ const Profile = () => {
             return ( 
                 <>
                     <div className="profile-nav">
-                        <Link to="sets">Sets</Link>
+                        <Link to="decks">Decks</Link>
                         <Link to="folders">Folders</Link>
                     </div>
                     <Outlet/>

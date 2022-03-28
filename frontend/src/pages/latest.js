@@ -8,18 +8,19 @@ const Home = () => {
   const user = getCurrentUser();
   const [decks, setDecks] = useState();
   useEffect(() => {
-    getUserDecks(user.username).then((res) => setDecks(res.data));
+    getUserDecks(user.username)
+    .then((res) => setDecks(res.data));
   }, []);
   return (
     <div>
       <div>
         <Link to={`/user/${user.username}`}>My Library</Link>
       </div>
-      Latest Sets
+      Latest Decks
       {decks &&
         decks.map((deck) => (
           <div key={deck._id}>
-            <Link to={`/set/${deck._id}`}>{deck.title}</Link>
+            <Link to={`/deck/${deck._id}`}>{deck.title}</Link>
           </div>
         ))}
     </div>
