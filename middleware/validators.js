@@ -4,7 +4,7 @@ const { isEmpty } = require("../utils/helpers");
 
 const validatePatch = (resource) => async (req, res, next) => {
   try {
-    if (isEmpty(req.body)) throw new BadRequestError("Fields required");
+    if (isEmpty(req.body)) throw new BadRequestError("Body required");
     
     if (resource === 'decks') {
       resource = req.user.isAdmin ? "decksAdmin" : "decksMember"
@@ -27,7 +27,7 @@ const validatePatch = (resource) => async (req, res, next) => {
 
 const validatePost = (resource) => async (req, res, next) => {
   try {
-    if (isEmpty(req.body)) throw new BadRequestError("Fields required");
+    if (isEmpty(req.body)) throw new BadRequestError("Body required");
     const requriedFields = REQUIRED_FIELDS[resource];
 
     requriedFields.forEach((f) => {

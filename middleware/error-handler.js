@@ -19,12 +19,12 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   }
 
   if (err.code && err.code === 11000) {
-    customError.msg = `Duplicate value entered for ${Object.keys(err.keyValue)} field, please choose another value`;
+    customError.msg = `${Object.keys(err.keyValue)} already taken.`;
     customError.statusCode = StatusCodes.CONFLICT;
   }
 
   if (err.name === "CastError") {
-    customError.msg = err.message;
+    customError.msg = "Invalid ObjectId";
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 

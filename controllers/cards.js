@@ -7,7 +7,7 @@ const Card = require("../models/Card");
 const Deck = require("../models/Deck");
 
 module.exports.getCards = catchAsync(async (req, res) => {
-  const cards = await Card.find({ deckId: req.query.deckId }).sort({
+  const cards = await Card.find({ deckId: req.deckId }).sort({
     createdAt: -1,
   });
   res.status(StatusCodes.OK).send(cards);

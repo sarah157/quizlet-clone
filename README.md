@@ -1,12 +1,11 @@
-# Quizlet Clone with Markdown Flashcards
+# Quizlet Clone
 
 ### What makes this different?
 Unlike Quizlet, you can create markdown flashcards with code or fancy math equations.
 
 ### How it works
 - Folders contain Decks. A Deck can be added to multiple Folders.
-- Decks contain cards.
-- Cards have a front-side and a back-side with markdown.
+- Decks contain cards that are written in markdown.
   
 ### Features
 - User authentication with JWT
@@ -21,10 +20,9 @@ Unlike Quizlet, you can create markdown flashcards with code or fancy math equat
 - MongoDB
 
 **Front-end**
-- React
+- React (in-progress)
 
-### In-progress/todo
-- React front-end
+### To-do
 - CRUD Classrooms
   - Admin can add Folders, Decks, and Members to a Classroom.
   - Admin can remove all Folders, Decks, and Members

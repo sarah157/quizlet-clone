@@ -2,7 +2,6 @@ require("dotenv").config();
 const {Schema, model} = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Deck = require('./Deck')
 
 const userSchema = new Schema(
   {
@@ -11,6 +10,7 @@ const userSchema = new Schema(
       required: [true, "Please provide a username"],
       maxlength: 50,
       minlength: 1,
+      unique: [true, "Username already taken"]
     },
     email: {
       type: String,
@@ -19,7 +19,7 @@ const userSchema = new Schema(
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
         "Please provide a valid email",
       ],
-      unique: true,
+      unique: [true, "Email already taken"],
     },
     password: {
       type: String,

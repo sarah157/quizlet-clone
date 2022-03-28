@@ -1,11 +1,12 @@
 const User = require('../models/User')
 
 const { StatusCodes } = require('http-status-codes')
-const { BadRequestError, AuthError } = require('../utils/errors')
+const { BadRequestError, AuthError, CustomError } = require('../utils/errors')
 const catchAsync = require('../utils/catchAsync')
 
 const register = catchAsync(async (req, res) => {
   const { username, password, email } = req.body;
+
   const user = await new User({ username, password, email }).save();
   const token = user.createJWT()
   const {password:p, ...other} = user._doc

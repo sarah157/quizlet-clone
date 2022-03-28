@@ -6,16 +6,19 @@ const { ForbiddenError } = require("../utils/errors");
 module.exports.getUser = catchAsync(async (req, res) => {
   if (!req.user.isAdmin) throw new ForbiddenError()
   const user = await User.findById(req.params.userId);
-
-  res.status(StatusCodes.OK).json({ ...user });
+  const { password, ...other } = user._doc;
+  res.status(StatusCodes.OK).json({ ...other });
 });
 
 module.exports.updateUser = catchAsync(async (req, res) => {
   if (!req.user.isAdmin) throw new ForbiddenError()
 
-  await User.findByIdAndUpdate(req.params.userId,
+  const user = await User.findByIdAndUpdate(req.params.userId,
     { $set: req.body },
-    { runValidators: true });
+    { runValidators: true, new : true});
+
+  const { password, ...other } = user._doc;
+  res.status(StatusCodes.OK).json({ ...other });
 });
 
 module.exports.deleteUser = catchAsync(async (req, res) => {

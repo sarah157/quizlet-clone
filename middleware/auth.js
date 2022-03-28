@@ -47,6 +47,7 @@ const authorizeUserAccess = function (req, res, next) {
     if (req.user.userId !== req.params.userId) {
       throw new ForbiddenError();
     }
+    req.user.isAdmin = true;
     next();
   } catch (error) {
     next(error);
@@ -70,9 +71,10 @@ const authorizeFolderAccess = async (req, res, next) => {
 // Decks routes
 const authorizeDeckAccess = async (req, res, next) => {
   try {
+    console.log(req.baseUrl)
     const actionType =
       req.method === "GET" ? ACTION_TYPE.READ : ACTION_TYPE.EDIT;
-    const deckId = req.deckId || req.params.deckId
+    const deckId = req.params.deckId || req.deckId
     const deck = await Deck.findById(deckId);
     if (!deck) throw new NotFoundError("Deck not found");
 
@@ -97,16 +99,15 @@ const authorizeDeckAccess = async (req, res, next) => {
 const authorizeCardAccess = async (req, res, next) => {
   try {
     let deckId;
-    if (req.baseUrl === "/cards") {
-
-      // deckId in query or body
-      deckId = req.query?.deckId || req.body?.deckId;
-      if (!deckId) throw new BadRequestError("deckId required");
-    } else {
-      // else, must find Card to get deckId
+    if (req.params.cardId) {
+      // must find Card to get deckId (cardId in req params)
       const card = await Card.findById(req.params.cardId);
       if (!card) throw new NotFoundError("Card not found");
       deckId = card.deckId;
+    } else {
+      // deckId in body for GET /cards and POST /cards requests
+      deckId = req.body?.deckId
+      if (!deckId) throw new BadRequestError("deckId required in body");
     }
     req.deckId = deckId;
     await authorizeDeckAccess(req, res, next);
