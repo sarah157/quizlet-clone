@@ -1,5 +1,4 @@
 const { StatusCodes } = require("http-status-codes");
-const mongoose = require("mongoose");
 const catchAsync = require("../utils/catchAsync");
 const { NotFoundError } = require("../utils/errors");
 

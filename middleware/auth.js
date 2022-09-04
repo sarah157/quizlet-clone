@@ -29,9 +29,9 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// Optional authentication for public GET routes. Skip any authentication errors
+// Skip any authentication errors
 // Allow access to private resources if current user is owner of resource
-const optionalAuth = function (req, res, next) {
+const getLoggedInUser = function (req, res, next) {
   authenticate(req, res, function () {
     next();
   });
@@ -118,7 +118,7 @@ const authorizeCardAccess = async (req, res, next) => {
 
 module.exports = {
   authenticate,
-  optionalAuth,
+  getLoggedInUser,
   authorizeUserAccess,
   authorizeFolderAccess,
   authorizeCardAccess,

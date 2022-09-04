@@ -7,19 +7,31 @@ const Deck = require("../models/Deck");
 const Folder = require("../models/Folder");
 
 const seedDB = async () => {
-  // await User.deleteMany({})
-  // await Deck.deleteMany({});
-  // await Card.deleteMany({})
+  await User.deleteMany({});
+  await Card.deleteMany({});
+  await Deck.deleteMany({});
+  await Folder.deleteMany({});
 
-  // const user = new User({ username: "sarah", email: "sarah123@gmail.com", password: "heythere" }).save()
-  const folder = new Folder({
-    title: "some folder",
-    owner: mongoose.Types.ObjectId("61dde20542d764665d5447e2"),
-    decks: ["61dde20542d764665d5447e4", "61dde20542d764665d5447e3"],
+  const user = new User({
+    username: "sarah",
+    email: "sarah123@gmail.com",
+    password: "heythere",
   }).save();
 
-  // await Deck.insertMany(cards)
-  const deck = await Deck.find({});
+  const card = new Card({ content: "card content", starred: false }).save();
+
+  const deck = new Deck({
+    title: "some deck",
+    desc: "some deck description",
+    cards: [card._id],
+    owner: user._id,
+  }).save();
+
+  const folder = new Folder({
+    title: "some folder",
+    owner: user._id,
+    decks: [deck._id],
+  }).save();
 };
 
 connectDB(process.env.MONGO_URI)
@@ -27,8 +39,4 @@ connectDB(process.env.MONGO_URI)
   .catch((err) => console.log(err));
 
 seedDB()
-  .then(() => {
-    mongoose.connection.close();
-    console.log("Database closed");
-  })
   .catch((err) => console.log(err));

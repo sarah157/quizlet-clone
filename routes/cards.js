@@ -1,18 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const cards = require("../controllers/cards");
-const { authenticate, optionalAuth, authorizeCardAccess } = require("../middleware/auth");
-const { validatePatch, validatePost } = require("../middleware/validators");
+const { authenticate, getLoggedInUser, authorizeCardAccess } = require("../middleware/auth");
   
 router
   .route("/")
-  .get(optionalAuth, authorizeCardAccess, cards.getCards)
-  .post(authenticate, authorizeCardAccess, validatePost('cards'), cards.createCard);
+  .get(getLoggedInUser, authorizeCardAccess, cards.getCards)
+  .post(authenticate, authorizeCardAccess, cards.createCard);
 
 router
   .route("/:cardId/")
-  .get(optionalAuth, authorizeCardAccess, cards.showCard)
-  .patch(authenticate, authorizeCardAccess, validatePatch('cards'), cards.updateCard)
+  .get(getLoggedInUser, authorizeCardAccess, cards.showCard)
+  .patch(authenticate, authorizeCardAccess, cards.updateCard)
   .delete(authenticate, authorizeCardAccess, cards.deleteCard);
 
 router
