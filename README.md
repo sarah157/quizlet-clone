@@ -1,10 +1,5 @@
 # Quizlet Clone Back-end
 
-### How it works
-- Unlike Quizlet, you can create markdown flashcards with code or fancy math equations.
-- Folders contain Decks. A Deck can be added to multiple Folders.
-- Decks contain cards that are written in markdown.
-  
 ### Features
 - User authentication with JWT
 - CRUD Folders
@@ -15,6 +10,9 @@
 ### Built With
 - Node.js with Express.js Framework
 - MongoDB
+- Mongoose
+- JSON Web Token
+- Bcrypt.js
 
 ## Usage
 ### Env variables
