@@ -27,7 +27,3 @@ JWT_LIFETIME=jwtlifetime
 ```
 $ npm install
 $ nodemon start
-```
-
-```
-
