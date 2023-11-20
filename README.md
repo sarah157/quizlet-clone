@@ -158,8 +158,10 @@ curl -X POST 'localhost:3005/auth/register' \
 
 `GET` get all decks for a user
 
-- **Query Parameters:**
-    - `username` (string, required)
+- **Query Parameters. Required one of:**
+    - `username` (string)
+    - `userId` (string)
+- If both are given, `userId` is used
 - Example
     
     ```
@@ -203,7 +205,10 @@ curl -X POST 'localhost:3005/auth/register' \
 
 ### `/cards`
 
-`GET` get all cards for logged in user
+`GET` get all cards for given deck
+- **Body Parameters:**
+    - `deckId` (string, required)
+      
 `POST` create card
 
 - **Body Parameters:**
@@ -227,6 +232,7 @@ curl -X POST 'localhost:3005/auth/register' \
 ### `/cards/:cardId/star`
 
 `GET` check if card with id `cardId` is starred
+
 `PUT` star card with id `cardId`
 
 `DELETE` unstar card with id `cardId`
